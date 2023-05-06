@@ -1,7 +1,7 @@
-package detector;
+package detector.pitch;
 
 import detector.model.Pitch;
 
-interface PitchDetector {
+public interface PitchDetector {
     Pitch detectPitch(double frequency);
 }

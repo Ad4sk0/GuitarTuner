@@ -1,6 +1,31 @@
 package detector.model;
 
 public enum Pitch {
+    C1(32.70, Note.C, 1),
+    C_SHARP_1(34.65, Note.C_SHARP, 1),
+    D1(36.71, Note.D, 1),
+    D_SHARP_1(38.89, Note.D_SHARP, 1),
+    E1(41.20, Note.E, 1),
+    F1(43.65, Note.F, 1),
+    F_SHARP_1(46.25, Note.F_SHARP, 1),
+    G1(49.00, Note.G, 1),
+    G_SHARP_1(51.91, Note.G_SHARP, 1),
+    A1(55.00, Note.A, 1),
+    A_SHARP_1(58.27, Note.A_SHARP, 1),
+    B1(61.74, Note.B, 1),
+
+    C2(65.41, Note.C, 2),
+    C_SHARP_2(69.30, Note.C_SHARP, 2),
+    D2(73.42, Note.D, 2),
+    D_SHARP_2(77.78, Note.D_SHARP, 2),
+    E2(82.41, Note.E, 2),
+    F2(87.31, Note.F, 2),
+    F_SHARP_2(92.50, Note.F_SHARP, 2),
+    G2(98.00, Note.G, 2),
+    G_SHARP_2(103.83, Note.G_SHARP, 2),
+    A2(110.00, Note.A, 2),
+    A_SHARP_2(116.54, Note.A_SHARP, 2),
+    B2(123.47, Note.B, 2),
 
     C3(130.81, Note.C, 3),
     C_SHARP_3(138.59, Note.C_SHARP, 3),

@@ -1,15 +1,11 @@
 package input.file.wav;
 
-import input.AudioStreamConverter;
+import input.*;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteOrder;
-import java.util.Arrays;
+import javax.sound.sampled.*;
+import java.io.*;
+import java.nio.*;
+import java.util.*;
 
 public class WavReader {
     private final ByteOrder byteOrder;
@@ -66,6 +62,15 @@ public class WavReader {
         samplesRead = samplesToReadEnd;
         return Arrays.copyOfRange(samples, samplesToReadStart, samplesToReadEnd);
     }
+
+    public double[] copySamplesFromRange(int startSample, int samplesNumber) {
+        int endSample = startSample + samplesNumber;
+        if (endSample >= samples.length) {
+            throw new IllegalStateException(String.format("Unable to copy samples from %d to %d. Total samples length: %d", startSample, endSample, samples.length));
+        }
+        return Arrays.copyOfRange(samples, startSample, endSample);
+    }
+
 
     public double[] getSamplesByDurationInMs(int startMs, int endMs) {
         float framesPerMs = frameRate / 1000;

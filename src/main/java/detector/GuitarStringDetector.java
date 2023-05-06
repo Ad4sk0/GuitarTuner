@@ -1,9 +1,9 @@
 package detector;
 
-import detector.model.Detection;
+import detector.dto.*;
 
 import java.util.Optional;
 
 public interface GuitarStringDetector {
-    Optional<Detection> detect(double[] signal, float sampleRate);
+    Optional<DetailedPitchDetection> detect(double[] signal, float sampleRate);
 }

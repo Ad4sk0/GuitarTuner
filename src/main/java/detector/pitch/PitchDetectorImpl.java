@@ -1,10 +1,10 @@
-package detector;
+package detector.pitch;
 
 import detector.model.Pitch;
 
 import java.util.Arrays;
 
-class PitchDetectorImpl implements PitchDetector {
+public class PitchDetectorImpl implements PitchDetector {
 
     private final static Pitch[] pitchList = Pitch.values();
     private final static Double[] frequencies = Arrays.stream(pitchList).map(Pitch::getFrequency).toArray(Double[]::new);

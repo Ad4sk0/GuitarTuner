@@ -1,5 +1,6 @@
-package detector;
+package detector.frequency;
 
+import detector.dto.*;
 import detector.noise.NoiseReductor;
 import fft.FFT;
 import util.ArrayUtils;
@@ -8,7 +9,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 
-class FrequencyDetectorNaiveImpl implements FrequencyDetector {
+public class FrequencyDetectorNaiveImpl implements FrequencyDetector {
 
     private final FFT fft;
     private final NoiseReductor noiseReductor;
@@ -20,12 +21,12 @@ class FrequencyDetectorNaiveImpl implements FrequencyDetector {
     }
 
     @Override
-    public Optional<Double> detectFrequency(double[] signal, float samplingFrequency) {
+    public Optional<DetailedPitchDetection> detectFrequency(double[] signal, float samplingFrequency) {
         double[] fftResult = fft.calculateFFT(signal);
         double[] fftResultWithoutNoise = noiseReductor.removeNoise(fftResult, samplingFrequency, MIN_FREQUENCY);
         double[] fftResultHalf = Arrays.copyOfRange(fftResultWithoutNoise, 0, fftResult.length / 2);
-        int maxIdx = ArrayUtils.findIndexOfMaxValue(fftResultHalf).orElseThrow(RuntimeException::new);
+        int maxIdx = ArrayUtils.findIndexOfMaxValue(fftResultHalf).orElseThrow(IllegalStateException::new);
         double frequency = maxIdx * (samplingFrequency / fftResult.length);
-        return Optional.of(frequency);
+        return Optional.of(new DetailedPitchDetection(frequency));
     }
 }

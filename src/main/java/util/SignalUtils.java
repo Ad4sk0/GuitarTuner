@@ -36,25 +36,37 @@ public class SignalUtils {
     }
 
     public static double[] applyHps(double[] fftResult, int n) {
-        double[][] hpsResult = new double[n][];
+        double[][] hpsSignals = downSampleSignal(fftResult, n);
+        return getHpsResult(hpsSignals);
+    }
+
+    public static double[][] downSampleSignal(double[] signal, int n) {
+        double[][] result = new double[n][];
         for (int i = 0; i < n; i++) {
             int divisor = 2 + i;
-            int currentLen = fftResult.length / (2 + i);
-            hpsResult[i] = new double[currentLen];
+            int currentLen = signal.length / divisor;
+            result[i] = new double[currentLen];
             for (int j = 0; j < currentLen; j++) {
                 int originalIdx = j * divisor;
-                hpsResult[i][j] = fftResult[originalIdx];
-            }
-        }
-        int finalLen = hpsResult[n - 1].length;
-        double[] result = new double[finalLen];
-        for (int i = 0; i < finalLen; i++) {
-            result[i] = 1;
-            for (int j = 0; j < n; j++) {
-                result[i] *= hpsResult[j][i];
+                result[i][j] = signal[originalIdx];
             }
         }
         return result;
     }
 
+    public static double[] getHpsResult(double[][] downSampledSignals) {
+        int finalLen = downSampledSignals[downSampledSignals.length - 1].length;
+        double[] result = new double[finalLen];
+        for (int i = 0; i < finalLen; i++) {
+            result[i] = 1;
+            for (double[] downSampledSignal : downSampledSignals) {
+                result[i] *= downSampledSignal[i];
+            }
+        }
+        return result;
+    }
+
+    public static double convertFftIndexToFrequency(int idx, float samplingFrequency, int fftLength) {
+        return idx * (samplingFrequency / fftLength);
+    }
 }

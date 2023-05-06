@@ -1,12 +1,14 @@
-package detector.model;
+package detector.dto;
 
-public class Detection {
+import detector.model.*;
+
+public class PitchDetection {
     private final double detectedFrequency;
     private final Pitch closestPitch;
     private final double closesPitchFrequency;
     private final double difference;
 
-    public Detection(double detectedFrequency, Pitch closestPitch) {
+    public PitchDetection(double detectedFrequency, Pitch closestPitch) {
         this.detectedFrequency = detectedFrequency;
         this.closestPitch = closestPitch;
         this.closesPitchFrequency = closestPitch.getFrequency();
