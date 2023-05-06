@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class GuitarTuner implements InputDataListener {
-    public static final int DETECTION_WINDOW_SIZE = 16384;
+    public static final int DETECTION_WINDOW_SIZE = 65536;
     public static final float SAMPLE_RATE = 48000;
     public static final int SAMPLE_SIZE = 16;
     public static final int CHANNELS = 1;
