@@ -26,7 +26,7 @@ public class DetailedPitchDetection {
 
     public void setClosestPitch(Pitch closestPitch) {
         this.closesPitchFrequency = closestPitch.getFrequency();
-        difference = Math.abs(detectedFrequency - closesPitchFrequency);
+        difference = detectedFrequency - closesPitchFrequency;
         this.closestPitch = closestPitch;
     }
 
