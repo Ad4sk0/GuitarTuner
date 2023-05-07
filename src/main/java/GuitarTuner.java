@@ -1,6 +1,7 @@
 import detector.GuitarStringDetector;
 import detector.GuitarStringDetectorImpl;
-import detector.model.Detection;
+import detector.dto.*;
+import frontend.*;
 import input.InputData;
 import input.InputDataListener;
 import input.InputDataThread;
@@ -22,7 +23,7 @@ public class GuitarTuner implements InputDataListener {
     private final InputData input;
     private final GuitarStringDetector detector;
     private final ExecutorService executorService;
-
+    private final TestGUI testGUI;
     public GuitarTuner() {
         // Properties
         PropertyService propertyService = PropertyServiceImpl.INSTANCE;
@@ -36,6 +37,7 @@ public class GuitarTuner implements InputDataListener {
         input = new MicrophoneInput(createAudioFormat(), DETECTION_WINDOW_SIZE);
         detector = new GuitarStringDetectorImpl();
         executorService = Executors.newSingleThreadExecutor();
+        testGUI = new TestGUI();
     }
 
     public void run() {
@@ -59,11 +61,28 @@ public class GuitarTuner implements InputDataListener {
     }
 
     private void detect(double[] samplesWindow) {
-        Optional<Detection> detectionOptional = detector.detect(samplesWindow, SAMPLE_RATE);
+        testGUI.updateSignalChart(ChartUtils.prepareXAxisSignalIndices(samplesWindow), samplesWindow, 1500);
+        Optional<DetailedPitchDetection> detectionOptional = detector.detect(samplesWindow, SAMPLE_RATE);
         if (detectionOptional.isEmpty()) {
             return;
         }
-        Detection detection = detectionOptional.get();
-        System.out.println(detection.getClosestPitch());
+        var detection = detectionOptional.get();
+        updateDetectionCharts(detection);
+        updateTunerPanel(detection);
+        System.out.println(detection);
+    }
+
+    private void updateTunerPanel(DetailedPitchDetection detection) {
+        testGUI.setDetection(detection);
+    }
+
+    private void updateDetectionCharts(DetailedPitchDetection detection) {
+        double fftMaxValue = Arrays.stream(detection.getFftResult()).max().getAsDouble();
+        double hpsMaxValue = Arrays.stream(detection.getHpsResult()).max().getAsDouble();
+        double[] xAxisFftIndices = ChartUtils.prepareXAxisFftIndices(detection.getFftResult(), SAMPLE_RATE, DETECTION_WINDOW_SIZE);
+        int targetSize = detection.getFftResult().length;
+        testGUI.updateFftChart(xAxisFftIndices, detection.getFftResult(), fftMaxValue);
+        testGUI.updateHpsChart(xAxisFftIndices, detection.getHpsResult(), hpsMaxValue, targetSize);
+        testGUI.updateDownSampledCharts(xAxisFftIndices, detection.getDownSampledSignals(), fftMaxValue, targetSize);
     }
 }
