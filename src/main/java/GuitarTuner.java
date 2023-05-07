@@ -5,24 +5,34 @@ import input.InputData;
 import input.InputDataListener;
 import input.InputDataThread;
 import input.mic.MicrophoneInput;
+import util.properties.*;
 
 import javax.sound.sampled.AudioFormat;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class GuitarTuner implements InputDataListener {
-    public static final int DETECTION_WINDOW_SIZE = 65536;
-    public static final float SAMPLE_RATE = 48000;
-    public static final int SAMPLE_SIZE = 16;
-    public static final int CHANNELS = 1;
-    public static final boolean SIGNED = true;
-    public static final boolean BIG_ENDIAN = true;
+    public final int DETECTION_WINDOW_SIZE;
+    public final float SAMPLE_RATE;
+    public final int SAMPLE_SIZE;
+    public final int CHANNELS;
+    public final boolean SIGNED;
+    public final boolean BIG_ENDIAN;
     private final InputData input;
     private final GuitarStringDetector detector;
     private final ExecutorService executorService;
 
     public GuitarTuner() {
+        // Properties
+        PropertyService propertyService = PropertyServiceImpl.INSTANCE;
+        DETECTION_WINDOW_SIZE = propertyService.getInt("detection.window.size", 65536);
+        SAMPLE_RATE = propertyService.getInt("sample.rate", 48000);
+        SAMPLE_SIZE = propertyService.getInt("sample.size", 16);
+        CHANNELS = propertyService.getInt("channels", 1);
+        SIGNED = propertyService.getBoolean("bit.signed", true);
+        BIG_ENDIAN = propertyService.getBoolean("bit.big.endian", true);
+
         input = new MicrophoneInput(createAudioFormat(), DETECTION_WINDOW_SIZE);
         detector = new GuitarStringDetectorImpl();
         executorService = Executors.newSingleThreadExecutor();
