@@ -15,12 +15,12 @@ public class FrequencyDetectorNaiveImpl implements FrequencyDetector {
 
     private final FFT fft;
     private final NoiseReductor noiseReductor;
-    private final int MIN_FREQUENCY;
+    private final int minFrequency;
 
     public FrequencyDetectorNaiveImpl(FFT fft, NoiseReductor noiseReductor) {
         // Properties
         PropertyService propertyService = PropertyServiceImpl.INSTANCE;
-        MIN_FREQUENCY = propertyService.getInt("min.frequency", 50);
+        minFrequency = propertyService.getInt("min.frequency", 50);
 
         this.fft = fft;
         this.noiseReductor = noiseReductor;
@@ -29,7 +29,7 @@ public class FrequencyDetectorNaiveImpl implements FrequencyDetector {
     @Override
     public Optional<DetailedPitchDetection> detectFrequency(double[] signal, float samplingFrequency) {
         double[] fftResult = fft.calculateFFT(signal);
-        double[] fftResultWithoutNoise = noiseReductor.removeNoise(fftResult, samplingFrequency, MIN_FREQUENCY);
+        double[] fftResultWithoutNoise = noiseReductor.removeNoise(fftResult, samplingFrequency, minFrequency);
         double[] fftResultHalf = Arrays.copyOfRange(fftResultWithoutNoise, 0, fftResult.length / 2);
         int maxIdx = ArrayUtils.findIndexOfMaxValue(fftResultHalf).orElseThrow(IllegalStateException::new);
         double frequency = maxIdx * (samplingFrequency / fftResult.length);

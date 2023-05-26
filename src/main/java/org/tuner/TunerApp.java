@@ -7,8 +7,11 @@ import org.tuner.frontend.MainWindowController;
 
 import java.io.IOException;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 public class TunerApp extends Application {
+
+    private final Logger logger = Logger.getLogger(TunerApp.class.getName());
     private MainWindowController mainWindowController;
     private GuitarTuner guitarTuner;
 
@@ -25,7 +28,7 @@ public class TunerApp extends Application {
 
     @Override
     public void stop() {
-        System.out.println("Stopping TunerApp");
+        logger.info("Stopping TunerApp");
         if (guitarTuner != null) {
             guitarTuner.stop();
         }

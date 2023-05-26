@@ -18,7 +18,6 @@ public class GuitarStringDetectorImpl implements GuitarStringDetector {
 
     public GuitarStringDetectorImpl() {
         this.frequencyDetector = new FrequencyDetectorHPS(new FFT(), new NoiseReductorImpl());
-//        this.frequencyDetector = new FrequencyDetectorAutocorrelation(null, new NoiseReductorImpl());
         this.pitchDetector = new PitchDetectorImpl();
     }
 

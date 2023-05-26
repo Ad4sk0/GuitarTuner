@@ -22,7 +22,7 @@ public class SignalUtils {
 
         double[] h = new double[n];
         int startX = 1 - n;
-        int step = 2;
+        double step = 2;
         for (int i = 0; i < n; i++) {
             h[i] = startX + i * step;
         }

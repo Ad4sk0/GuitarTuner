@@ -26,11 +26,6 @@ public class FFT {
     private double[] padWithZeros(double[] signal, int targetLength) {
         double[] result = new double[targetLength];
         System.arraycopy(signal, 0, result, 0, signal.length);
-        for (int i = 0; i < signal.length; i++) {
-            if (signal[i] != result[i]) {
-                throw new RuntimeException();
-            }
-        }
         return result;
     }
 
@@ -64,7 +59,7 @@ public class FFT {
         Complex[] result = new Complex[n];
         for (int i = 0; i < n / 2; i++) {
 
-            double t = (-2 * Math.PI * i) / (double) n;
+            double t = (-2 * Math.PI * i) / n;
             Complex exp = (new Complex(Math.cos(t), Math.sin(t)).multiply(odds[i]));
 
             result[i] = evens[i].add(exp);
@@ -93,7 +88,7 @@ public class FFT {
         int bigN = bigArray.length;
         int smallN = bigN / 2;
         if (bigN % 2 != 0) {
-            throw new RuntimeException("Array size must be even: " + bigN);
+            throw new IllegalStateException("Array size must be even: " + bigN);
         }
         int start = 0;
         if (odds) {

@@ -15,17 +15,17 @@ import java.util.Optional;
 
 public class FrequencyDetectorAutocorrelation implements FrequencyDetector {
 
-    private final int MIN_SIGNAL_POWER;
+    private final int minSignalPower;
 
     public FrequencyDetectorAutocorrelation(FFT fft, NoiseReductor noiseReductor) {
         PropertyService propertyService = PropertyServiceImpl.INSTANCE;
-        MIN_SIGNAL_POWER = propertyService.getInt("min.signal.power", 100);
+        minSignalPower = propertyService.getInt("min.signal.power", 100);
     }
 
     @Override
     public Optional<DetailedPitchDetection> detectFrequency(double[] signal, float samplingFrequency) {
         double power = SignalUtils.calculatePower(signal);
-        if (power < MIN_SIGNAL_POWER) {
+        if (power < minSignalPower) {
             return Optional.empty();
         }
         double[] autocorrelation = calculateAutocorrelationWithNormalization(signal, signal.length);
@@ -41,13 +41,16 @@ public class FrequencyDetectorAutocorrelation implements FrequencyDetector {
         boolean peakFound = false;
         int peakIdx = -1;
         double peakMaxValue = 0;
-        for (int i = 0; i < autocorrelation.length; i++) {
 
-            // Ignore frequencies > frequencyThresh
-            if (samplingFrequency / i > frequencyThresh) {
-                continue;
+        int startIdx = 0;
+        for (int i = 1; i < autocorrelation.length; i++) {
+            if (samplingFrequency / i < frequencyThresh) {
+                startIdx = i;
+                break;
             }
+        }
 
+        for (int i = startIdx; i < autocorrelation.length; i++) {
             if (autocorrelation[i] > autocorrelationThresh) {
                 if (autocorrelation[i] > peakMaxValue) {
                     peakIdx = i;
@@ -79,8 +82,12 @@ public class FrequencyDetectorAutocorrelation implements FrequencyDetector {
     }
 
     public double[] calculateAutocorrelationWithNormalization(double[] signal, int lags) {
-        var mean = Arrays.stream(signal).average().getAsDouble();
-        var variance = getVariance(signal, mean);
+        double mean = Arrays.stream(signal).average().orElse(0);
+        double variance = getVariance(signal, mean);
+
+        if (variance == 0) {
+            throw new IllegalStateException();
+        }
 
         double[] result = new double[signal.length];
         result[0] = 1;

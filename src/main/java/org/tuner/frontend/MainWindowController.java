@@ -2,59 +2,40 @@ package org.tuner.frontend;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import org.tuner.detector.model.Pitch;
 
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
-public class MainWindowController implements Initializable {
-
-    @FXML
-    private Rectangle sliderRectangle;
-
-    @FXML
-    private Line sliderLine;
-
-    @FXML
-    private Pane sliderPane;
-
-    @FXML
-    private Label noteLabel;
-
-    @FXML
-    private Label frequencyLabel;
-
-    @FXML
-    private Label diffLabel;
+public class MainWindowController {
 
     private final NumberFormat numberFormatter = new DecimalFormat("#0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-    }
+    @FXML
+    private Rectangle sliderRectangle;
+    @FXML
+    private Line sliderLine;
+    @FXML
+    private Pane sliderPane;
+    @FXML
+    private Label noteLabel;
+    @FXML
+    private Label frequencyLabel;
+    @FXML
+    private Label diffLabel;
 
     public void onNewFrequencyAction(double frequency) {
         Pitch pitch = getClosestNotePitch(frequency);
         double diff = pitch.getFrequency() - frequency;
 
-        Platform.runLater(() -> {
-            frequencyLabel.setText(numberFormatter.format(frequency));
-        });
-        Platform.runLater(() -> {
-            noteLabel.setText(pitch.toString());
-        });
-        Platform.runLater(() -> {
-            diffLabel.setText(numberFormatter.format(diff));
-        });
+        Platform.runLater(() -> frequencyLabel.setText(numberFormatter.format(frequency)));
+        Platform.runLater(() -> noteLabel.setText(pitch.toString()));
+        Platform.runLater(() -> diffLabel.setText(numberFormatter.format(diff)));
 
         adjustSlider(pitch, diff);
     }

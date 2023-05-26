@@ -14,14 +14,15 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class MicrophoneInput implements InputData, Runnable {
-
     private final int windowSize;
     private final AudioFormat audioFormat;
     private final AudioStreamConverter audioStreamConverter;
     private final TargetDataLine microphoneLine;
     private final List<InputDataListener> listeners;
+    private final Logger logger = Logger.getLogger(MicrophoneInput.class.getName());
     private boolean isRunning = false;
 
     public MicrophoneInput(AudioFormat audioFormat, int windowSize) {
@@ -48,11 +49,11 @@ public class MicrophoneInput implements InputData, Runnable {
 
         for (var mixerInfo : availableMixersArray) {
             Mixer mixer = AudioSystem.getMixer(mixerInfo);
-            System.out.println("Mixer: " + mixer.getMixerInfo());
+            logger.info("Mixer: " + mixer.getMixerInfo());
 
             Line.Info[] targetLineInfoArray = mixer.getTargetLineInfo();
             for (var lineInfo : targetLineInfoArray) {
-                System.out.println("\t(Target Line) " + lineInfo);
+                logger.info(() -> String.format("\t(Target Line) %s", lineInfo));
                 result.add(lineInfo);
             }
         }
@@ -114,7 +115,7 @@ public class MicrophoneInput implements InputData, Runnable {
             throw new IllegalStateException("Unable to get bytes of data " + e.getMessage());
         } finally {
             endMicrophone();
-            System.out.println("Finished");
+            logger.info("Finished");
         }
     }
 
@@ -133,7 +134,7 @@ public class MicrophoneInput implements InputData, Runnable {
 
 
     public void stop() {
-        System.out.println("Stopping Microphone input");
+        logger.info("Stopping Microphone input");
         isRunning = false;
     }
 }

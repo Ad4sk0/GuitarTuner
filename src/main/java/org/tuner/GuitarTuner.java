@@ -12,31 +12,33 @@ import org.tuner.tool.properties.PropertyServiceImpl;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 
 public class GuitarTuner implements InputDataListener {
-    public final int DETECTION_WINDOW_SIZE;
-    public final float SAMPLE_RATE;
-    public final int SAMPLE_SIZE;
-    public final int CHANNELS;
-    public final boolean SIGNED;
-    public final boolean BIG_ENDIAN;
+
+    private final Logger logger = Logger.getLogger(GuitarTuner.class.getName());
+    public final int detectionWindowSize;
+    public final float sampleRate;
+    public final int sampleSize;
+    public final int channels;
+    public final boolean signed;
+    public final boolean bigEndian;
     private final InputData input;
     private final GuitarStringDetector detector;
-
-    MainWindowController tunerController;
+    private final MainWindowController tunerController;
 
     public GuitarTuner(MainWindowController tunerController) {
 
         PropertyService propertyService = PropertyServiceImpl.INSTANCE;
-        DETECTION_WINDOW_SIZE = propertyService.getInt("detection.window.size", 65536);
-        SAMPLE_RATE = propertyService.getInt("sample.rate", 48000);
-        SAMPLE_SIZE = propertyService.getInt("sample.size", 16);
-        CHANNELS = propertyService.getInt("channels", 1);
-        SIGNED = propertyService.getBoolean("bit.signed", true);
-        BIG_ENDIAN = propertyService.getBoolean("bit.big.endian", true);
+        detectionWindowSize = propertyService.getInt("detection.window.size", 65536);
+        sampleRate = propertyService.getInt("sample.rate", 48000);
+        sampleSize = propertyService.getInt("sample.size", 16);
+        channels = propertyService.getInt("channels", 1);
+        signed = propertyService.getBoolean("bit.signed", true);
+        bigEndian = propertyService.getBoolean("bit.big.endian", true);
 
-        input = new MicrophoneInput(createAudioFormat(), DETECTION_WINDOW_SIZE);
+        input = new MicrophoneInput(createAudioFormat(), detectionWindowSize);
         detector = new GuitarStringDetectorImpl();
 
         this.tunerController = tunerController;
@@ -48,7 +50,7 @@ public class GuitarTuner implements InputDataListener {
     }
 
     private AudioFormat createAudioFormat() {
-        return new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE, CHANNELS, SIGNED, BIG_ENDIAN);
+        return new AudioFormat(sampleRate, sampleSize, channels, signed, bigEndian);
     }
 
     @Override
@@ -57,17 +59,17 @@ public class GuitarTuner implements InputDataListener {
     }
 
     private void detect(double[] samplesWindow) {
-        Optional<DetailedPitchDetection> detectionOptional = detector.detect(samplesWindow, SAMPLE_RATE);
+        Optional<DetailedPitchDetection> detectionOptional = detector.detect(samplesWindow, sampleRate);
         if (detectionOptional.isEmpty()) {
             return;
         }
         var detection = detectionOptional.get();
-        System.out.println(detection);
+        logger.info(detection::toString);
         tunerController.onNewFrequencyAction(detection.getDetectedFrequency());
     }
 
     public void stop() {
-        System.out.println("Stopping GuitarTuner");
+        logger.info("Stopping GuitarTuner");
         input.stop();
     }
 }

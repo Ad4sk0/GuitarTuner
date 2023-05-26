@@ -1,22 +1,20 @@
 package org.tuner.input;
 
 import javax.sound.sampled.AudioFormat;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class AudioStreamConverter {
 
+    private static final Logger logger = Logger.getLogger(AudioStreamConverter.class.getName());
+
     public double[] extractSamples(AudioFormat audioFormat, byte[] data) {
-        try {
-            return extractSamplesFromAudioStreamThrowing(audioFormat, data);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return extractSamplesFromAudioStreamThrowing(audioFormat, data);
     }
 
-    private double[] extractSamplesFromAudioStreamThrowing(AudioFormat audioFormat, byte[] data) throws IOException {
+    private double[] extractSamplesFromAudioStreamThrowing(AudioFormat audioFormat, byte[] data) {
 
         final int frameSize = audioFormat.getFrameSize();
         final long framesNumber = data.length / frameSize;
@@ -38,7 +36,7 @@ public class AudioStreamConverter {
             }
 
             bb.order(byteOrder);
-            samples[j] = bb.getShort(); // / normValue;
+            samples[j] = bb.getShort();
             if (currentBytes.length == 0) {
                 break;
             }
@@ -48,8 +46,8 @@ public class AudioStreamConverter {
     }
 
     private void logAudioStreamInfo(AudioFormat audioFormat, long framesNumber) {
-        System.out.println("Frame rate: " + audioFormat.getFrameRate() + "Hz");
-        System.out.println("Frame size: " + audioFormat.getFrameSize());
-        System.out.println("Frames number: " + framesNumber);
+        logger.info(() -> String.format("Frame rate: %.2fHz", audioFormat.getFrameRate()));
+        logger.info(() -> String.format("Frame size: %d", audioFormat.getFrameSize()));
+        logger.info(() -> String.format("Frames number: %d", framesNumber));
     }
 }

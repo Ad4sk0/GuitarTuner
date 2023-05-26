@@ -6,8 +6,8 @@ import java.util.Arrays;
 
 public class PitchDetectorImpl implements PitchDetector {
 
-    private final static Pitch[] pitchList = Pitch.values();
-    private final static Double[] frequencies = Arrays.stream(pitchList).map(Pitch::getFrequency).toArray(Double[]::new);
+    private static final Pitch[] pitchList = Pitch.values();
+    private static final Double[] frequencies = Arrays.stream(pitchList).map(Pitch::getFrequency).toArray(Double[]::new);
 
     @Override
     public Pitch detectPitch(double frequency) {

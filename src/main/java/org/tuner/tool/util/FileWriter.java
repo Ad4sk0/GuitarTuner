@@ -9,16 +9,12 @@ public class FileWriter {
         throw new IllegalStateException("Utility class");
     }
 
-    public static void writeSignalToFile(double[] signal, String path) {
-        try {
-            BufferedWriter bufferedWriter = new BufferedWriter(new java.io.FileWriter(path));
+    public static void writeSignalToFile(double[] signal, String path) throws IOException {
+        try (var fileWriter = new java.io.FileWriter(path)) {
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
             for (double sample : signal) {
                 bufferedWriter.write(sample + ",");
             }
-            bufferedWriter.flush();
-            bufferedWriter.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }

@@ -23,8 +23,8 @@ public enum PropertyServiceImpl implements PropertyService {
         if (propertiesResource == null) {
             throw new IllegalStateException(String.format("Unable to find properties file: %s", propertiesFileName));
         }
-        try {
-            properties.load(new FileInputStream(propertiesResource.getFile()));
+        try (var file = new FileInputStream(propertiesResource.getFile())) {
+            properties.load(file);
         } catch (IOException e) {
             throw new IllegalStateException(String.format("Unable to read properties file: %s", propertiesFileName));
         }

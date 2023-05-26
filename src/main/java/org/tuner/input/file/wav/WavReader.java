@@ -10,8 +10,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class WavReader {
+
+    private final Logger logger = Logger.getLogger(WavReader.class.getName());
     private final ByteOrder byteOrder;
     private final int frameSize;
     private final long framesNumber;
@@ -33,7 +36,7 @@ public class WavReader {
         try {
             samples = audioStreamConverter.extractSamples(audioFormat, audioInputStream.readAllBytes());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -45,16 +48,16 @@ public class WavReader {
         try (AudioInputStream audioInputStream = readFile(filePath)) {
             return new WavReader(audioInputStream);
         } catch (IOException | UnsupportedAudioFileException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
     public void logContent() {
-        System.out.println("Frame rate: " + frameRate + "Hz");
-        System.out.println("Frame size: " + frameSize);
-        System.out.println("Frames number: " + framesNumber);
-        System.out.println("Byte order: " + byteOrder);
-        System.out.println("Duration in sec: " + durationInSec);
+        logger.info(() -> String.format("Frame rate: %.2f Hz", frameRate));
+        logger.info(() -> String.format("Frame size: %d", frameSize));
+        logger.info(() -> String.format("Frames number: %d", framesNumber));
+        logger.info(() -> String.format("Byte order: %s", byteOrder.toString()));
+        logger.info(() -> String.format("Duration in sec: %.2f", durationInSec));
     }
 
     public double[] getSamples(int samplesNumber) {
@@ -79,13 +82,16 @@ public class WavReader {
     public double[] getSamplesByDurationInMs(int startMs, int endMs) {
         float framesPerMs = frameRate / 1000;
         int samplesToReadStart = (int) (startMs * framesPerMs);
-        int samplesToReadEnd = (int) (endMs * framesPerMs);
-        if (samplesToReadEnd >= samples.length) {
+        int samplesToReadEnd;
+        int end = (int) (endMs * framesPerMs);
+        if (end >= samples.length) {
             samplesToReadEnd = samples.length - 1;
-            System.out.println("End ms out of range");
+            logger.info("End ms out of range");
+        } else {
+            samplesToReadEnd = end;
         }
-        System.out.println("startMs: " + startMs + " frameIdx: " + samplesToReadStart);
-        System.out.println("endMs: " + endMs + " frameIdx: " + samplesToReadEnd);
+        logger.info(() -> String.format("startMs: %d frameIdx: %d", startMs, samplesToReadStart));
+        logger.info(() -> String.format("endMs: %d frameIdx: %d", endMs, samplesToReadEnd));
         return Arrays.copyOfRange(samples, samplesToReadStart, samplesToReadEnd);
     }
 
