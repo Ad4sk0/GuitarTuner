@@ -1,22 +1,28 @@
 package org.tuner.frontend;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 import org.tuner.detector.dto.DetailedPitchDetection;
 import org.tuner.detector.model.Pitch;
 import org.tuner.detector.observer.DetectionProducer;
 
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-public class MainWindowController {
+public class MainWindowController implements Initializable {
 
     private final Logger logger = Logger.getLogger(MainWindowController.class.getName());
     private final NumberFormat numberFormatter = new DecimalFormat("#0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
@@ -33,8 +39,32 @@ public class MainWindowController {
     @FXML
     private Label diffLabel;
     private DetectionProducer detectionProducer;
+    private Timeline clearDetectionTimeline;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        clearDetectionData();
+        frequencyLabel.setText("Play any note");
+        initializeClearDetectionAnimation();
+    }
+
+    private void initializeClearDetectionAnimation() {
+        final int clearTimeInSeconds = 2;
+        clearDetectionTimeline = new Timeline(
+                new KeyFrame(Duration.seconds(clearTimeInSeconds),
+                        x -> clearDetectionData()
+                ));
+    }
+
+    private void clearDetectionData() {
+        frequencyLabel.setText("");
+        noteLabel.setText("");
+        diffLabel.setText("");
+        sliderLine.setVisible(false);
+    }
 
     public void onNewDetectionAction(DetailedPitchDetection pitchDetection) {
+        clearDetectionTimeline.playFromStart();
         double frequency = pitchDetection.getDetectedFrequency();
         Pitch pitch = pitchDetection.getClosestPitch();
         double diff = pitchDetection.getDifference();
@@ -71,6 +101,7 @@ public class MainWindowController {
         double newX = midPosition + positionChange;
         sliderLine.setStartX(newX);
         sliderLine.setEndX(newX);
+        sliderLine.setVisible(true);
     }
 
     private Pitch getPreviousPitch(Pitch pitch) {
