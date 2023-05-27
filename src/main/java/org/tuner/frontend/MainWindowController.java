@@ -1,6 +1,7 @@
 package org.tuner.frontend;
 
 import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -40,20 +41,22 @@ public class MainWindowController implements Initializable {
     private Label diffLabel;
     private DetectionProducer detectionProducer;
     private Timeline clearDetectionTimeline;
+    private Timeline sliderLinePathTimeLine;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         clearDetectionData();
         frequencyLabel.setText("Play any note");
+        sliderLinePathTimeLine = new Timeline();
         initializeClearDetectionAnimation();
     }
 
     private void initializeClearDetectionAnimation() {
         final int clearTimeInSeconds = 2;
-        clearDetectionTimeline = new Timeline(
-                new KeyFrame(Duration.seconds(clearTimeInSeconds),
-                        x -> clearDetectionData()
-                ));
+        clearDetectionTimeline = new Timeline(new KeyFrame(Duration.seconds(clearTimeInSeconds), x -> {
+            clearDetectionData();
+            sliderLinePathTimeLine.stop();
+        }));
     }
 
     private void clearDetectionData() {
@@ -69,8 +72,8 @@ public class MainWindowController implements Initializable {
         Pitch pitch = pitchDetection.getClosestPitch();
         double diff = pitchDetection.getDifference();
 
-        Platform.runLater(() -> frequencyLabel.setText(numberFormatter.format(frequency)));
         Platform.runLater(() -> noteLabel.setText(pitch.toString()));
+        Platform.runLater(() -> frequencyLabel.setText(numberFormatter.format(frequency)));
         Platform.runLater(() -> diffLabel.setText(numberFormatter.format(diff)));
 
         adjustSlider(pitch, diff);
@@ -99,9 +102,21 @@ public class MainWindowController implements Initializable {
         double positionChange = diff / maxFreqDiff * maxSliderDist;
 
         double newX = midPosition + positionChange;
-        sliderLine.setStartX(newX);
-        sliderLine.setEndX(newX);
-        sliderLine.setVisible(true);
+        if (sliderLine.isVisible()) {
+            moveSliderWithAnimation(newX);
+        } else {
+            sliderLine.setStartX(newX);
+            sliderLine.setEndX(newX);
+            sliderLine.setVisible(true);
+        }
+    }
+
+    private void moveSliderWithAnimation(double newX) {
+        sliderLinePathTimeLine.stop();
+        sliderLinePathTimeLine.getKeyFrames().clear();
+        KeyFrame keyFrame = new KeyFrame(Duration.millis(100), new KeyValue(sliderLine.startXProperty(), newX), new KeyValue(sliderLine.endXProperty(), newX));
+        sliderLinePathTimeLine.getKeyFrames().add(keyFrame);
+        sliderLinePathTimeLine.play();
     }
 
     private Pitch getPreviousPitch(Pitch pitch) {
