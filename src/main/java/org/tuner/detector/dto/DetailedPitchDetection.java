@@ -8,12 +8,22 @@ public class DetailedPitchDetection {
     private double closesPitchFrequency;
     private double difference;
     private double signalPower;
+
+    private double[] signal = new double[0];
     private double[] fftResult = new double[0];
     private double[] hpsResult = new double[0];
     private double[][] downSampledSignals = new double[0][0];
 
     public DetailedPitchDetection(double detectedFrequency) {
         this.detectedFrequency = detectedFrequency;
+    }
+
+    public double[] getSignal() {
+        return signal;
+    }
+
+    public void setSignal(double[] signal) {
+        this.signal = signal;
     }
 
     public double getDetectedFrequency() {

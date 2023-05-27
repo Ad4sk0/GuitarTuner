@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<LineChart fx:id="lineChart" alternativeRowFillVisible="false" animated="false" createSymbols="false"
+           horizontalGridLinesVisible="false" horizontalZeroLineVisible="false" legendVisible="false"
+           verticalGridLinesVisible="false" verticalZeroLineVisible="false" xmlns="http://javafx.com/javafx/16"
+           xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.tuner.frontend.SignalChartController">
+    <xAxis>
+        <CategoryAxis side="BOTTOM"/>
+    </xAxis>
+    <yAxis>
+        <NumberAxis side="LEFT"/>
+    </yAxis>
+</LineChart>

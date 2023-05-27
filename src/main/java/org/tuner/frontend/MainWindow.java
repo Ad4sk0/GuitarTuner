@@ -3,10 +3,13 @@ package org.tuner.frontend;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.tuner.detector.dto.DetailedPitchDetection;
+import org.tuner.detector.observer.DetectionListener;
+import org.tuner.detector.observer.DetectionProducer;
 
 import java.io.IOException;
 
-public class MainWindow {
+public class MainWindow implements DetectionListener {
 
     private final MainWindowController controller;
 
@@ -25,7 +28,13 @@ public class MainWindow {
         stage.show();
     }
 
-    public MainWindowController getController() {
-        return controller;
+    public void setDetectionProducer(DetectionProducer detectionProducer) {
+        controller.setDetectionProducer(detectionProducer);
+        detectionProducer.addListener(this);
+    }
+
+    @Override
+    public void onNewDetection(DetailedPitchDetection pitchDetection) {
+        controller.onNewDetectionAction(pitchDetection);
     }
 }

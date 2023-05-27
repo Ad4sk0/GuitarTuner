@@ -3,7 +3,8 @@ package org.tuner;
 import org.tuner.detector.GuitarStringDetector;
 import org.tuner.detector.GuitarStringDetectorImpl;
 import org.tuner.detector.dto.DetailedPitchDetection;
-import org.tuner.frontend.MainWindowController;
+import org.tuner.detector.observer.DetectionListener;
+import org.tuner.detector.observer.DetectionProducer;
 import org.tuner.input.InputData;
 import org.tuner.input.InputDataListener;
 import org.tuner.input.mic.MicrophoneInput;
@@ -11,24 +12,26 @@ import org.tuner.tool.properties.PropertyService;
 import org.tuner.tool.properties.PropertyServiceImpl;
 
 import javax.sound.sampled.AudioFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
 
-public class GuitarTuner implements InputDataListener {
+public class GuitarTuner implements InputDataListener, DetectionProducer {
 
-    private final Logger logger = Logger.getLogger(GuitarTuner.class.getName());
     public final int detectionWindowSize;
     public final float sampleRate;
     public final int sampleSize;
     public final int channels;
     public final boolean signed;
     public final boolean bigEndian;
+    private final Logger logger = Logger.getLogger(GuitarTuner.class.getName());
     private final InputData input;
     private final GuitarStringDetector detector;
-    private final MainWindowController tunerController;
+    private final List<DetectionListener> detectionListenerList;
 
-    public GuitarTuner(MainWindowController tunerController) {
+    public GuitarTuner() {
 
         PropertyService propertyService = PropertyServiceImpl.INSTANCE;
         detectionWindowSize = propertyService.getInt("detection.window.size", 65536);
@@ -40,8 +43,7 @@ public class GuitarTuner implements InputDataListener {
 
         input = new MicrophoneInput(createAudioFormat(), detectionWindowSize);
         detector = new GuitarStringDetectorImpl();
-
-        this.tunerController = tunerController;
+        detectionListenerList = new ArrayList<>();
     }
 
     public void run() {
@@ -65,11 +67,27 @@ public class GuitarTuner implements InputDataListener {
         }
         var detection = detectionOptional.get();
         logger.info(detection::toString);
-        tunerController.onNewFrequencyAction(detection.getDetectedFrequency());
+        informListeners(detection);
     }
 
     public void stop() {
         logger.info("Stopping GuitarTuner");
         input.stop();
+    }
+
+    @Override
+    public void addListener(DetectionListener detectionListener) {
+        detectionListenerList.add(detectionListener);
+    }
+
+    @Override
+    public void removeListener(DetectionListener detectionListener) {
+        detectionListenerList.remove(detectionListener);
+    }
+
+    private void informListeners(DetailedPitchDetection detection) {
+        for (DetectionListener detectionListener : detectionListenerList) {
+            detectionListener.onNewDetection(detection);
+        }
     }
 }

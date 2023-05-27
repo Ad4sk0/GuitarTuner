@@ -6,15 +6,19 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import org.tuner.detector.dto.DetailedPitchDetection;
 import org.tuner.detector.model.Pitch;
+import org.tuner.detector.observer.DetectionProducer;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 public class MainWindowController {
 
+    private final Logger logger = Logger.getLogger(MainWindowController.class.getName());
     private final NumberFormat numberFormatter = new DecimalFormat("#0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
     @FXML
     private Rectangle sliderRectangle;
@@ -28,16 +32,30 @@ public class MainWindowController {
     private Label frequencyLabel;
     @FXML
     private Label diffLabel;
+    private DetectionProducer detectionProducer;
 
-    public void onNewFrequencyAction(double frequency) {
-        Pitch pitch = getClosestNotePitch(frequency);
-        double diff = pitch.getFrequency() - frequency;
+    public void onNewDetectionAction(DetailedPitchDetection pitchDetection) {
+        double frequency = pitchDetection.getDetectedFrequency();
+        Pitch pitch = pitchDetection.getClosestPitch();
+        double diff = pitchDetection.getDifference();
 
         Platform.runLater(() -> frequencyLabel.setText(numberFormatter.format(frequency)));
         Platform.runLater(() -> noteLabel.setText(pitch.toString()));
         Platform.runLater(() -> diffLabel.setText(numberFormatter.format(diff)));
 
         adjustSlider(pitch, diff);
+    }
+
+    public void chooseHpsAlgorithm() {
+        logger.warning("Changing algorithms at runtime not implemented yet");
+    }
+
+    public void chooseAutocorrelationAlgorithm() {
+        logger.warning("Changing algorithms at runtime not implemented yet");
+    }
+
+    public void signalChartAction() {
+        new SignalChart(detectionProducer);
     }
 
     private void adjustSlider(Pitch pitch, double diff) {
@@ -79,19 +97,7 @@ public class MainWindowController {
         return Pitch.G_SHARP_6;
     }
 
-    private Pitch getClosestNotePitch(double frequency) {
-        Pitch result = Pitch.A1;
-        double dist = Double.MAX_VALUE;
-        for (Pitch pitch : Pitch.values()) {
-            double curDist = pitch.getFrequency() - frequency;
-            if (Math.abs(curDist) < dist) {
-                result = pitch;
-                dist = Math.abs(curDist);
-            }
-            if (curDist > 0) {
-                break;
-            }
-        }
-        return result;
+    public void setDetectionProducer(DetectionProducer detectionProducer) {
+        this.detectionProducer = detectionProducer;
     }
 }

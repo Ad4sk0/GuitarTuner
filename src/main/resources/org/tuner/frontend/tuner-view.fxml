@@ -17,19 +17,16 @@
     <children>
         <MenuBar nodeOrientation="LEFT_TO_RIGHT" style="-fx-background-color: #8a77a8;" VBox.vgrow="NEVER">
             <menus>
-                <Menu mnemonicParsing="false" text="File">
+                <Menu mnemonicParsing="false" text="PDA">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Close"/>
+                        <MenuItem mnemonicParsing="false" onAction="#chooseHpsAlgorithm" text="HPS"/>
+                        <MenuItem mnemonicParsing="false" onAction="#chooseAutocorrelationAlgorithm"
+                                  text="Autocorrelation"/>
                     </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Edit">
+                <Menu mnemonicParsing="false" text="Chart">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Delete"/>
-                    </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="Help">
-                    <items>
-                        <MenuItem mnemonicParsing="false" text="About"/>
+                        <MenuItem mnemonicParsing="false" onAction="#signalChartAction" text="Signal"/>
                     </items>
                 </Menu>
             </menus>
