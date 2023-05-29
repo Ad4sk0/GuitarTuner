@@ -2,6 +2,7 @@ package org.tuner.detector.frequency;
 
 import org.tuner.detector.dto.DetailedPitchDetection;
 import org.tuner.detector.noise.NoiseReductor;
+import org.tuner.detector.noise.NoiseReductorImpl;
 import org.tuner.tool.fft.FFT;
 import org.tuner.tool.properties.PropertyService;
 import org.tuner.tool.properties.PropertyServiceImpl;
@@ -19,15 +20,14 @@ public class FrequencyDetectorHPS implements FrequencyDetector {
     private final int minFrequency;
     private final int minSignalPower;
 
-    public FrequencyDetectorHPS(FFT fft, NoiseReductor noiseReductor) {
+    public FrequencyDetectorHPS() {
         // Properties
         PropertyService propertyService = PropertyServiceImpl.INSTANCE;
-        downSampleLoops = propertyService.getInt("down.sample.loops", 5);
+        downSampleLoops = propertyService.getInt("down.sample.loops", 6);
         minFrequency = propertyService.getInt("min.frequency", 50);
         minSignalPower = propertyService.getInt("min.signal.power", 100);
-
-        this.fft = fft;
-        this.noiseReductor = noiseReductor;
+        this.fft = new FFT();
+        this.noiseReductor = new NoiseReductorImpl();
     }
 
     @Override
@@ -36,8 +36,7 @@ public class FrequencyDetectorHPS implements FrequencyDetector {
         if (power < minSignalPower) {
             return Optional.empty();
         }
-        double[] signalHanning = SignalUtils.applyHanningWindow(signal);
-        double[] fftResult = fft.calculateFFT(signalHanning);
+        double[] fftResult = fft.calculateFFT(signal);
         double[] fftResultWithoutNoise = noiseReductor.removeNoise(fftResult, samplingFrequency, minFrequency);
         double[] fftResultHalf = Arrays.copyOfRange(fftResultWithoutNoise, 0, fftResult.length / 2);
         double[][] downSampledSignals = SignalUtils.downSampleSignal(fftResultHalf, downSampleLoops);

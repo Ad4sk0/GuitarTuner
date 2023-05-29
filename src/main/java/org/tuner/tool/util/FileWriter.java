@@ -9,12 +9,14 @@ public class FileWriter {
         throw new IllegalStateException("Utility class");
     }
 
-    public static void writeSignalToFile(double[] signal, String path) throws IOException {
+    public static void writeSignalToFile(double[] signal, String path) {
         try (var fileWriter = new java.io.FileWriter(path)) {
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
             for (double sample : signal) {
                 bufferedWriter.write(sample + ",");
             }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 }

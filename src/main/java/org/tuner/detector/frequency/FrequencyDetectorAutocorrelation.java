@@ -1,25 +1,30 @@
 package org.tuner.detector.frequency;
 
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
 import org.tuner.detector.dto.DetailedPitchDetection;
-import org.tuner.detector.noise.NoiseReductor;
-import org.tuner.tool.fft.FFT;
 import org.tuner.tool.properties.PropertyService;
 import org.tuner.tool.properties.PropertyServiceImpl;
 import org.tuner.tool.util.SignalUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 
 public class FrequencyDetectorAutocorrelation implements FrequencyDetector {
-
+    private final FastFourierTransformer fft;
+    private final int minFrequency;
+    private final int maxFrequency;
     private final int minSignalPower;
 
-    public FrequencyDetectorAutocorrelation(FFT fft, NoiseReductor noiseReductor) {
+    public FrequencyDetectorAutocorrelation() {
         PropertyService propertyService = PropertyServiceImpl.INSTANCE;
+        minFrequency = propertyService.getInt("min.frequency", 60);
+        maxFrequency = propertyService.getInt("max.frequency", 500);
         minSignalPower = propertyService.getInt("min.signal.power", 100);
+        this.fft = new FastFourierTransformer(DftNormalization.STANDARD);
     }
 
     @Override
@@ -28,57 +33,65 @@ public class FrequencyDetectorAutocorrelation implements FrequencyDetector {
         if (power < minSignalPower) {
             return Optional.empty();
         }
-        double[] autocorrelation = calculateAutocorrelationWithNormalization(signal, signal.length);
-        int peakIdx = getFirstPeakIdx(autocorrelation, 1000, 0.7, samplingFrequency);
-        double frequency = samplingFrequency / peakIdx;
+        double[] autocorrelation = calculateAutocorrelationWithFFT(signal);
+        double frequency = getFrequency(autocorrelation, samplingFrequency);
         var detection = new DetailedPitchDetection(frequency);
         detection.setSignalPower(power);
         detection.setFftResult(autocorrelation);
         return Optional.of(detection);
     }
 
-    public int getFirstPeakIdx(double[] autocorrelation, double frequencyThresh, double autocorrelationThresh, double samplingFrequency) {
-        boolean peakFound = false;
-        int peakIdx = -1;
-        double peakMaxValue = 0;
-
-        int startIdx = 0;
-        for (int i = 1; i < autocorrelation.length; i++) {
-            if (samplingFrequency / i < frequencyThresh) {
-                startIdx = i;
-                break;
-            }
-        }
-
-        for (int i = startIdx; i < autocorrelation.length; i++) {
-            if (autocorrelation[i] > autocorrelationThresh) {
-                if (autocorrelation[i] > peakMaxValue) {
-                    peakIdx = i;
-                    peakMaxValue = autocorrelation[i];
-                }
-                peakFound = true;
-            } else if (peakFound) {
-                break;
-            }
-        }
-        return peakIdx;
+    private double[] calculateAutocorrelationWithFFT(double[] signal) {
+        Complex[] fftResult = fft.transform(signal, TransformType.FORWARD);
+        double[] powerSpectrum = calculatePowerSpectrum(fftResult);
+        Complex[] ifftResult = fft.transform(powerSpectrum, TransformType.INVERSE);
+        return getRealPart(ifftResult);
     }
 
-    /**
-     * Calculate average distance between autocorrelation peaks. First and last indices are ignored.
-     *
-     * @param peaks peaks from autocorrelation function
-     * @return avg distance between peaks
-     */
-    public double getAvgDist(int[] peaks) {
-        if (peaks.length < 2) {
-            return 0;
+    private double[] calculatePowerSpectrum(Complex[] fftResult) {
+        double[] result = new double[fftResult.length];
+        for (int i = 0; i < fftResult.length; i++) {
+            result[i] = Math.pow(fftResult[i].abs(), 2);
         }
-        int totalDist = 0;
-        for (int i = 1; i < peaks.length; i++) {
-            totalDist += peaks[i] - peaks[i - 1];
+        return result;
+    }
+
+    private double[] getRealPart(Complex[] ifftResult) {
+        double[] result = new double[ifftResult.length];
+        for (int i = 0; i < ifftResult.length; i++) {
+            result[i] = ifftResult[i].getReal();
         }
-        return totalDist / (double) (peaks.length - 3);
+        return result;
+    }
+
+    private double getFrequency(double[] autocorrelation, float samplingFrequency) {
+        int minIdx = (int) (samplingFrequency / maxFrequency);
+        int maxIdx = (int) (samplingFrequency / minFrequency);
+
+        int resultIdx = minIdx;
+        double maxValue = autocorrelation[minIdx];
+        for (int i = minIdx + 1; i <= maxIdx; i++) {
+            if (autocorrelation[i] > maxValue) {
+                resultIdx = i;
+                maxValue = autocorrelation[i];
+            }
+        }
+        return samplingFrequency / resultIdx;
+    }
+
+    private double getFrequencyFromComplex(Complex[] fftResult, float samplingFrequency) {
+        int minIdx = (int) (samplingFrequency / maxFrequency);
+        int maxIdx = (int) (samplingFrequency / minFrequency);
+
+        int resultIdx = minIdx;
+        double maxValue = fftResult[minIdx].getReal();
+        for (int i = minIdx + 1; i <= maxIdx; i++) {
+            if (fftResult[i].getReal() > maxValue) {
+                resultIdx = i;
+                maxValue = fftResult[i].getReal();
+            }
+        }
+        return samplingFrequency / resultIdx;
     }
 
     public double[] calculateAutocorrelationWithNormalization(double[] signal, int lags) {
@@ -123,26 +136,5 @@ public class FrequencyDetectorAutocorrelation implements FrequencyDetector {
             result += Math.pow(x - mean, 2);
         }
         return result;
-    }
-
-    public int[] getPeaks(double[] arr) {
-        if (arr.length == 0) {
-            return new int[0];
-        }
-        List<Integer> result = new ArrayList<>();
-        double last = arr[0];
-        boolean isRising = false;
-        for (int i = 1; i < arr.length; i++) {
-            if (arr[i] < last) {
-                if (isRising) {
-                    result.add(i - 1);
-                }
-                isRising = false;
-            } else {
-                isRising = true;
-            }
-            last = arr[i];
-        }
-        return result.stream().mapToInt(Integer::intValue).toArray();
     }
 }

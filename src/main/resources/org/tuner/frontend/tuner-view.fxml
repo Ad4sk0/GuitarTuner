@@ -19,9 +19,10 @@
             <menus>
                 <Menu mnemonicParsing="false" text="PDA">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#chooseHpsAlgorithm" text="HPS"/>
                         <MenuItem mnemonicParsing="false" onAction="#chooseAutocorrelationAlgorithm"
                                   text="Autocorrelation"/>
+                        <MenuItem mnemonicParsing="false" onAction="#chooseCepstrumAlgorithm" text="Cepstrum"/>
+                        <MenuItem mnemonicParsing="false" onAction="#chooseHpsAlgorithm" text="HPS"/>
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Chart">

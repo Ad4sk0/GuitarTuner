@@ -27,6 +27,7 @@ public class MainWindowController implements Initializable {
 
     private final Logger logger = Logger.getLogger(MainWindowController.class.getName());
     private final NumberFormat numberFormatter = new DecimalFormat("#0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+    private static final String CHANGE_ALGORITHM_NOT_IMPLEMENTED_MSG = "Changing algorithms at runtime not implemented yet";
     @FXML
     private Rectangle sliderRectangle;
     @FXML
@@ -80,11 +81,15 @@ public class MainWindowController implements Initializable {
     }
 
     public void chooseHpsAlgorithm() {
-        logger.warning("Changing algorithms at runtime not implemented yet");
+        logger.warning(CHANGE_ALGORITHM_NOT_IMPLEMENTED_MSG);
     }
 
     public void chooseAutocorrelationAlgorithm() {
-        logger.warning("Changing algorithms at runtime not implemented yet");
+        logger.warning(CHANGE_ALGORITHM_NOT_IMPLEMENTED_MSG);
+    }
+
+    public void chooseCepstrumAlgorithm() {
+        logger.warning(CHANGE_ALGORITHM_NOT_IMPLEMENTED_MSG);
     }
 
     public void signalChartAction() {

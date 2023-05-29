@@ -70,12 +70,16 @@ public class WavReader {
         return Arrays.copyOfRange(samples, samplesToReadStart, samplesToReadEnd);
     }
 
-    public double[] copySamplesFromRange(int startSample, int samplesNumber) {
-        int endSample = startSample + samplesNumber;
+    public double[] copySamplesByRange(int startSample, int endSample) {
         if (endSample >= samples.length) {
             throw new IllegalStateException(String.format("Unable to copy samples from %d to %d. Total samples length: %d", startSample, endSample, samples.length));
         }
         return Arrays.copyOfRange(samples, startSample, endSample);
+    }
+
+    public double[] copySamplesFromRange(int startSample, int samplesNumber) {
+        int endSample = startSample + samplesNumber;
+        return copySamplesByRange(startSample, endSample);
     }
 
 

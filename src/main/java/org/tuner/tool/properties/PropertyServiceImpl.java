@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 public enum PropertyServiceImpl implements PropertyService {
 
     INSTANCE;
+    private final Logger logger = Logger.getLogger(PropertyServiceImpl.class.getName());
 
     private final Properties properties;
 
@@ -16,6 +18,13 @@ public enum PropertyServiceImpl implements PropertyService {
         String propertiesFileName = "main.properties";
         properties = new Properties();
         loadProperties(propertiesFileName);
+        logProperties();
+    }
+
+    private void logProperties() {
+        for (var entry : properties.entrySet()) {
+            logger.info(() -> String.format("%s: %s%n", entry.getKey(), entry.getValue()));
+        }
     }
 
     private void loadProperties(String propertiesFileName) {
