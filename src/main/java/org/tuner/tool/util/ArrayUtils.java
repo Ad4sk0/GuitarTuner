@@ -1,5 +1,6 @@
 package org.tuner.tool.util;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ArrayUtils {
@@ -21,6 +22,27 @@ public class ArrayUtils {
             }
         }
         return Optional.of(idx);
+    }
+
+    public static double calculateAbSum(List<Double> list) {
+        double sum = 0;
+        for (double value : list) {
+            sum += Math.abs(value);
+        }
+        return sum;
+    }
+
+    public static String[][] transpose(String[][] originalArray) {
+        if (originalArray.length == 0) {
+            return new String[0][0];
+        }
+        String[][] result = new String[originalArray[0].length][originalArray.length];
+        for (int i = 0; i < originalArray[0].length; i++) {
+            for (int j = 0; j < originalArray.length; j++) {
+                result[i][j] = originalArray[j][i];
+            }
+        }
+        return result;
     }
 
 }

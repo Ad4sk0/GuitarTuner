@@ -1,4 +1,4 @@
 .idea
 target
 TODO
-src/test
+src/test/resources/
