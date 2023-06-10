@@ -13,8 +13,9 @@ public class FileWriter {
         try (var fileWriter = new java.io.FileWriter(path)) {
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
             for (double sample : signal) {
-                bufferedWriter.write(sample + ",");
+                bufferedWriter.write(sample + ";");
             }
+            bufferedWriter.flush();
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
