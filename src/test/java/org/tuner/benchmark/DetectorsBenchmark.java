@@ -33,9 +33,9 @@ import java.util.logging.Logger;
  * following by dot, like A2.wav (any characters are allowed after first dot, for example "A2.test1.wav"). The pitch
  * must be one of {@link Pitch} enum.
  */
-class DetectorsBenchmark {
+public class DetectorsBenchmark {
 
-    private final static String BENCHMARK_SAMPLES_DIRECTORY = "testSamples/benchmarkSamplesTmp";
+    public final static String BENCHMARK_SAMPLES_DIRECTORY = "testSamples/benchmarkSamplesTmp";
     private final Logger logger = Logger.getLogger(GuitarTuner.class.getName());
 
     @Test
