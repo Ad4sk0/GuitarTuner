@@ -35,7 +35,7 @@ public class GuitarTuner implements InputDataListener, DetectionProducer {
 
         PropertyService propertyService = PropertyServiceImpl.INSTANCE;
         detectionWindowSize = propertyService.getInt("detection.window.size", 65536);
-        sampleRate = propertyService.getInt("sample.rate", 48000);
+        sampleRate = propertyService.getInt("sampling.rate", 48000);
         sampleSize = propertyService.getInt("sample.size", 16);
         channels = propertyService.getInt("channels", 1);
         signed = propertyService.getBoolean("bit.signed", true);

@@ -83,4 +83,9 @@ public enum PropertyServiceImpl implements PropertyService {
     public void set(String key, String value) {
         properties.setProperty(key, value);
     }
+
+    @Override
+    public boolean containsProperty(String key) {
+        return properties.containsKey(key);
+    }
 }

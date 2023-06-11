@@ -1,7 +1,8 @@
 package org.tuner.benchmark;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.tuner.GuitarTuner;
 import org.tuner.detector.GuitarStringDetectorImpl;
 import org.tuner.detector.dto.DetailedPitchDetection;
@@ -38,12 +39,15 @@ public class DetectorsBenchmark {
     public final static String BENCHMARK_SAMPLES_DIRECTORY = "testSamples/benchmarkSamples";
     private final Logger logger = Logger.getLogger(GuitarTuner.class.getName());
 
-    @Test
-    void benchmarkDetectorAlgorithmsOnRealData() {
+    @ParameterizedTest(name = "Benchmark with window size: {0}")
+    @ValueSource(ints = {2048, 4096, 8192, 16384, 32768, 65536})
+    void benchmarkDetectorAlgorithmsOnRealData(int detectionWindowSize) {
 
-        List<DetectorAlgorithm> algorithmsToTest = List.of(DetectorAlgorithm.AUTOCORRELATION, DetectorAlgorithm.CEPSTRUM, DetectorAlgorithm.HPS);
-
-        int detectionWindowSize = 2048;
+        List<DetectorAlgorithm> algorithmsToTest = List.of(
+                DetectorAlgorithm.AUTOCORRELATION,
+                DetectorAlgorithm.CEPSTRUM,
+                DetectorAlgorithm.HPS
+        );
 
         URL benchmarkSamplesResource = getClass().getClassLoader().getResource(BENCHMARK_SAMPLES_DIRECTORY);
         if (benchmarkSamplesResource == null) {

@@ -14,4 +14,6 @@ public interface PropertyService {
     boolean getBoolean(String key, boolean defaultValue);
 
     void set(String key, String value);
+
+    boolean containsProperty(String key);
 }

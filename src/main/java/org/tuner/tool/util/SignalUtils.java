@@ -38,6 +38,19 @@ public class SignalUtils {
         return (int) (frequency * signalLength / samplingFrequency);
     }
 
+    public static double convertFftIndexToFrequencyWithInterpolation(int idx, double[] freqDomainArray,
+                                                                     double samplingFrequency, int signalLength) {
+        if (idx < 1 || idx + 1 >= freqDomainArray.length) {
+            throw new IllegalArgumentException("Unable to interpolate index");
+        }
+        double prev = freqDomainArray[idx - 1];
+        double curr = freqDomainArray[idx];
+        double next = freqDomainArray[idx + 1];
+        double p = (prev - next) / (2 * (prev - 2 * curr + next));
+        double interpolatedIdx = idx + p;
+        return interpolatedIdx * samplingFrequency / signalLength;
+    }
+
     public static double[] createHannWindow(int n) {
         double[] window = new double[n];
         for (int i = 0; i < n; i++) {
@@ -100,13 +113,12 @@ public class SignalUtils {
         return resultIdx;
     }
 
-    public static double getHighestFrequencyByPeakIdxFreqDomainFromRange(double[] freqDomainArray,
-                                                                         float samplingFrequency, double minFrequency,
-                                                                         double maxFrequency, int signalLength) {
+    public static int getHighestPeakIdxFreqDomainFromRange(double[] freqDomainArray,
+                                                           float samplingFrequency, double minFrequency,
+                                                           double maxFrequency, int signalLength) {
         int minIdx = convertFrequencyToFFTIndex(minFrequency, samplingFrequency, signalLength);
         int maxIdx = convertFrequencyToFFTIndex(maxFrequency, samplingFrequency, signalLength);
-        int resultIdx = getHighestPeakIndexFromRange(freqDomainArray, minIdx, maxIdx);
-        return convertFftIndexToFrequency(resultIdx, samplingFrequency, signalLength);
+        return getHighestPeakIndexFromRange(freqDomainArray, minIdx, maxIdx);
     }
 
     public static double getHighestFrequencyByPeakIdxTimeDomainFromRange(double[] timeDomainArray,
