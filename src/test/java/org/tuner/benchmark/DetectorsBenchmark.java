@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  */
 public class DetectorsBenchmark {
 
-    public final static String BENCHMARK_SAMPLES_DIRECTORY = "testSamples/benchmarkSamplesTmp";
+    public final static String BENCHMARK_SAMPLES_DIRECTORY = "testSamples/benchmarkSamples";
     private final Logger logger = Logger.getLogger(GuitarTuner.class.getName());
 
     @Test

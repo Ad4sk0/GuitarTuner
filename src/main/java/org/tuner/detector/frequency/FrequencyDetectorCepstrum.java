@@ -32,14 +32,20 @@ public class FrequencyDetectorCepstrum implements FrequencyDetector {
         if (power < minSignalPower) {
             return Optional.empty();
         }
-        double[] signalHanning = SignalUtils.applyHanningWindow(signal);
-        Complex[] fftResult = fft.transform(signalHanning, TransformType.FORWARD);
-        double[] fftResultLog = calculateAbsAndLog(fftResult);
-        Complex[] ifftResult = fft.transform(fftResultLog, TransformType.FORWARD);
-        double frequency = getFrequencyFromComplex(ifftResult, samplingFrequency);
+        double[] signalWithWindow = SignalUtils.applyHannWindow(signal);
+        double[] cepstrum = calculateCepstrum(signalWithWindow);
+        double frequency = SignalUtils.getHighestFrequencyByPeakIdxTimeDomainFromRange(cepstrum, samplingFrequency,
+                minFrequency, maxFrequency);
         var detection = new DetailedPitchDetection(frequency);
         detection.setSignalPower(power);
         return Optional.of(detection);
+    }
+
+    private double[] calculateCepstrum(double[] signal) {
+        Complex[] fftResult = fft.transform(signal, TransformType.FORWARD);
+        double[] fftResultLog = calculateAbsAndLog(fftResult);
+        Complex[] ifftResult = fft.transform(fftResultLog, TransformType.INVERSE);
+        return SignalUtils.getRealPart(ifftResult);
     }
 
     private double[] calculateAbsAndLog(Complex[] complexArray) {
@@ -48,20 +54,5 @@ public class FrequencyDetectorCepstrum implements FrequencyDetector {
             result[i] = Math.log(complexArray[i].abs());
         }
         return result;
-    }
-
-    private double getFrequencyFromComplex(Complex[] fftResult, float samplingFrequency) {
-        int minIdx = (int) (samplingFrequency / maxFrequency);
-        int maxIdx = (int) (samplingFrequency / minFrequency);
-
-        int resultIdx = minIdx;
-        double maxValue = fftResult[minIdx].getReal();
-        for (int i = minIdx + 1; i <= maxIdx; i++) {
-            if (fftResult[i].getReal() > maxValue) {
-                resultIdx = i;
-                maxValue = fftResult[i].getReal();
-            }
-        }
-        return samplingFrequency / resultIdx;
     }
 }

@@ -1,6 +1,6 @@
 package org.tuner.tool.util;
 
-import java.util.Arrays;
+import org.apache.commons.math3.complex.Complex;
 
 public class SignalUtils {
 
@@ -14,27 +14,6 @@ public class SignalUtils {
             sum += Math.abs(value);
         }
         return sum / signal.length;
-    }
-
-    public static double[] applyHanningWindow(double[] array) {
-        int n = array.length;
-        double[] result = new double[n];
-
-        double[] h = new double[n];
-        int startX = 1 - n;
-        double step = 2;
-        for (int i = 0; i < n; i++) {
-            h[i] = startX + i * step;
-        }
-
-        for (int i = 0; i < n; i++) {
-            h[i] = 0.5 + 0.5 * Math.cos(Math.PI * h[i] / (n - 1));
-        }
-
-        for (int i = 0; i < n; i++) {
-            result[i] = array[i] * h[i];
-        }
-        return result;
     }
 
     public static double[][] downSampleSignal(double[] signal, int n) {
@@ -51,19 +30,91 @@ public class SignalUtils {
         return result;
     }
 
-    public static double[] getHpsResult(double[][] downSampledSignals, double[] originalSignal) {
-        int finalLen = downSampledSignals[downSampledSignals.length - 1].length;
-        double[] result = Arrays.copyOfRange(originalSignal, 0, finalLen);
-        for (int i = 0; i < finalLen; i++) {
-            result[i] = 1;
-            for (double[] downSampledSignal : downSampledSignals) {
-                result[i] *= downSampledSignal[i];
-            }
+    public static double convertFftIndexToFrequency(int idx, float samplingFrequency, int signalLength) {
+        return idx * (samplingFrequency / signalLength);
+    }
+
+    public static int convertFrequencyToFFTIndex(double frequency, float samplingFrequency, int signalLength) {
+        return (int) (frequency * signalLength / samplingFrequency);
+    }
+
+    public static double[] createHannWindow(int n) {
+        double[] window = new double[n];
+        for (int i = 0; i < n; i++) {
+            window[i] = 0.5 * (1 - Math.cos(2 * Math.PI * (i / (double) n)));
+        }
+        return window;
+    }
+
+    public static double[] applyHannWindow(double[] signal) {
+        double[] window = createHannWindow(signal.length);
+        return multiply(signal, window);
+    }
+
+    public static double[] multiply(double[] s1, double[] s2) {
+        if (s1.length != s2.length) {
+            throw new IllegalArgumentException("Signal lengths are not the same");
+        }
+        double[] result = new double[s1.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = s1[i] * s2[i];
         }
         return result;
     }
 
-    public static double convertFftIndexToFrequency(int idx, float samplingFrequency, int fftLength) {
-        return idx * (samplingFrequency / fftLength);
+    public static double[] calculateMagnitude(Complex[] complexArray) {
+        double[] result = new double[complexArray.length];
+        for (int i = 0; i < complexArray.length; i++) {
+            result[i] = Math.sqrt(Math.pow(complexArray[i].getReal(), 2) + Math.pow(complexArray[i].getImaginary(), 2));
+        }
+        return result;
+    }
+
+    public static double[] getRealPart(Complex[] complexArray) {
+        double[] result = new double[complexArray.length];
+        for (int i = 0; i < complexArray.length; i++) {
+            result[i] = complexArray[i].getReal();
+        }
+        return result;
+    }
+
+    public static int getHighestPeakIndexFromRange(double[] array, int minIdx, int maxIdx) {
+        if (minIdx > maxIdx) {
+            throw new IllegalArgumentException("Min index less than max index");
+        }
+        if (minIdx < 0) {
+            throw new IllegalArgumentException("Min index less than 0");
+        }
+        if (maxIdx > array.length) {
+            throw new IllegalArgumentException("max index greater than array length");
+        }
+
+        int resultIdx = minIdx;
+        double maxValue = array[minIdx];
+        for (int i = minIdx + 1; i <= maxIdx; i++) {
+            if (array[i] > maxValue) {
+                resultIdx = i;
+                maxValue = array[i];
+            }
+        }
+        return resultIdx;
+    }
+
+    public static double getHighestFrequencyByPeakIdxFreqDomainFromRange(double[] freqDomainArray,
+                                                                         float samplingFrequency, double minFrequency,
+                                                                         double maxFrequency, int signalLength) {
+        int minIdx = convertFrequencyToFFTIndex(minFrequency, samplingFrequency, signalLength);
+        int maxIdx = convertFrequencyToFFTIndex(maxFrequency, samplingFrequency, signalLength);
+        int resultIdx = getHighestPeakIndexFromRange(freqDomainArray, minIdx, maxIdx);
+        return convertFftIndexToFrequency(resultIdx, samplingFrequency, signalLength);
+    }
+
+    public static double getHighestFrequencyByPeakIdxTimeDomainFromRange(double[] timeDomainArray,
+                                                                         float samplingFrequency, double minFrequency,
+                                                                         double maxFrequency) {
+        int minIdx = (int) (samplingFrequency / maxFrequency);
+        int maxIdx = (int) (samplingFrequency / minFrequency);
+        int resultIdx = getHighestPeakIndexFromRange(timeDomainArray, minIdx, maxIdx);
+        return samplingFrequency / resultIdx;
     }
 }

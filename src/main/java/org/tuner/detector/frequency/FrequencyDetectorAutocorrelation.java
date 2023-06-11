@@ -34,10 +34,10 @@ public class FrequencyDetectorAutocorrelation implements FrequencyDetector {
             return Optional.empty();
         }
         double[] autocorrelation = calculateAutocorrelationWithFFT(signal);
-        double frequency = getFrequency(autocorrelation, samplingFrequency);
+        double frequency = SignalUtils.getHighestFrequencyByPeakIdxTimeDomainFromRange(autocorrelation, samplingFrequency,
+                minFrequency, maxFrequency);
         var detection = new DetailedPitchDetection(frequency);
         detection.setSignalPower(power);
-        detection.setFftResult(autocorrelation);
         return Optional.of(detection);
     }
 
@@ -45,58 +45,20 @@ public class FrequencyDetectorAutocorrelation implements FrequencyDetector {
         Complex[] fftResult = fft.transform(signal, TransformType.FORWARD);
         double[] powerSpectrum = calculatePowerSpectrum(fftResult);
         Complex[] ifftResult = fft.transform(powerSpectrum, TransformType.INVERSE);
-        return getRealPart(ifftResult);
+        return SignalUtils.getRealPart(ifftResult);
     }
 
-    private double[] calculatePowerSpectrum(Complex[] fftResult) {
-        double[] result = new double[fftResult.length];
-        for (int i = 0; i < fftResult.length; i++) {
-            result[i] = Math.pow(fftResult[i].abs(), 2);
+    private double[] calculatePowerSpectrum(Complex[] complexArray) {
+        double[] result = new double[complexArray.length];
+        for (int i = 0; i < complexArray.length; i++) {
+            result[i] = Math.pow(complexArray[i].abs(), 2);
         }
         return result;
-    }
-
-    private double[] getRealPart(Complex[] ifftResult) {
-        double[] result = new double[ifftResult.length];
-        for (int i = 0; i < ifftResult.length; i++) {
-            result[i] = ifftResult[i].getReal();
-        }
-        return result;
-    }
-
-    private double getFrequency(double[] autocorrelation, float samplingFrequency) {
-        int minIdx = (int) (samplingFrequency / maxFrequency);
-        int maxIdx = (int) (samplingFrequency / minFrequency);
-
-        int resultIdx = minIdx;
-        double maxValue = autocorrelation[minIdx];
-        for (int i = minIdx + 1; i <= maxIdx; i++) {
-            if (autocorrelation[i] > maxValue) {
-                resultIdx = i;
-                maxValue = autocorrelation[i];
-            }
-        }
-        return samplingFrequency / resultIdx;
-    }
-
-    private double getFrequencyFromComplex(Complex[] fftResult, float samplingFrequency) {
-        int minIdx = (int) (samplingFrequency / maxFrequency);
-        int maxIdx = (int) (samplingFrequency / minFrequency);
-
-        int resultIdx = minIdx;
-        double maxValue = fftResult[minIdx].getReal();
-        for (int i = minIdx + 1; i <= maxIdx; i++) {
-            if (fftResult[i].getReal() > maxValue) {
-                resultIdx = i;
-                maxValue = fftResult[i].getReal();
-            }
-        }
-        return samplingFrequency / resultIdx;
     }
 
     public double[] calculateAutocorrelationWithNormalization(double[] signal, int lags) {
         double mean = Arrays.stream(signal).average().orElse(0);
-        double variance = getVariance(signal, mean);
+        double variance = calculateVariance(signal, mean);
 
         if (variance == 0) {
             throw new IllegalStateException();
@@ -130,7 +92,7 @@ public class FrequencyDetectorAutocorrelation implements FrequencyDetector {
         return result;
     }
 
-    private double getVariance(double[] signal, double mean) {
+    private double calculateVariance(double[] signal, double mean) {
         double result = 0;
         for (double x : signal) {
             result += Math.pow(x - mean, 2);
