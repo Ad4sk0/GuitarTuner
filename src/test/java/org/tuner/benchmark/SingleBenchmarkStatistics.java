@@ -1,7 +1,11 @@
 package org.tuner.benchmark;
 
+import org.tuner.detector.model.Pitch;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
 class SingleBenchmarkStatistics {
@@ -13,6 +17,7 @@ class SingleBenchmarkStatistics {
     private int correctNoteDetections;
     private long duration;
     private double absoluteFrequencyDifferenceSum;
+    private List<DetectionStatistic> detectionStatisticList = new ArrayList<>();
 
     public static List<String> getHeaders() {
         return new ArrayList<>(List.of(
@@ -37,6 +42,7 @@ class SingleBenchmarkStatistics {
         correctNoteDetections += newSingleBenchmarkStatistics.getCorrectNoteDetections();
         duration += newSingleBenchmarkStatistics.getDuration();
         absoluteFrequencyDifferenceSum += newSingleBenchmarkStatistics.getAbsoluteFrequencyDifferenceSum();
+        detectionStatisticList.addAll(newSingleBenchmarkStatistics.getDetectionStatisticList());
     }
 
     public String formatBenchmarkSummary() {
@@ -108,6 +114,14 @@ class SingleBenchmarkStatistics {
         this.absoluteFrequencyDifferenceSum = absoluteFrequencyDifferenceSum;
     }
 
+    public List<DetectionStatistic> getDetectionStatisticList() {
+        return detectionStatisticList;
+    }
+
+    public void setDetectionStatisticList(List<DetectionStatistic> detectionStatisticList) {
+        this.detectionStatisticList = detectionStatisticList;
+    }
+
     public double getCorrectPitchDetectionsRate() {
         return correctPitchDetections / (double) detections;
     }
@@ -122,5 +136,38 @@ class SingleBenchmarkStatistics {
 
     public double getAverageDuration() {
         return duration / (double) detections;
+    }
+
+    public Map<Pitch, Integer> getCorrectNotesDetections() {
+        Map<Pitch, Integer> result = new HashMap<>();
+        for (var detectionStatistic : detectionStatisticList) {
+            result.putIfAbsent(detectionStatistic.expectedPitch(), 0);
+
+            if (detectionStatistic.expectedPitch() == detectionStatistic.actualPitch()) {
+                result.put(detectionStatistic.expectedPitch(), result.get(detectionStatistic.expectedPitch()) + 1);
+            }
+        }
+        return result;
+    }
+
+    public Map<Pitch, Integer> getExpectedNotesDetections() {
+        Map<Pitch, Integer> result = new HashMap<>();
+        for (var detectionStatistic : detectionStatisticList) {
+            result.putIfAbsent(detectionStatistic.expectedPitch(), 0);
+            result.put(detectionStatistic.expectedPitch(), result.get(detectionStatistic.expectedPitch()) + 1);
+        }
+        return result;
+    }
+
+    public Map<Pitch, Double> getAverageNotesDetections() {
+        Map<Pitch, Integer> expected = getExpectedNotesDetections();
+        Map<Pitch, Integer> correct = getCorrectNotesDetections();
+        Map<Pitch, Double> result = new HashMap<>();
+
+        for (var key : expected.keySet()) {
+            double avg = correct.get(key) / (double) expected.get(key);
+            result.put(key, avg);
+        }
+        return result;
     }
 }

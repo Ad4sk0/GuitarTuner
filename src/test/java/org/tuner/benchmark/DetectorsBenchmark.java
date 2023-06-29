@@ -122,6 +122,7 @@ public class DetectorsBenchmark {
         int correctNoteDetections = 0;
         long duration = 0;
         List<Double> frequencyDifferenceList = new ArrayList<>();
+        List<DetectionStatistic> detectionStatisticList = new ArrayList<>();
 
         // Window size
         int startSample = 0;
@@ -152,7 +153,9 @@ public class DetectorsBenchmark {
                     correctNoteDetections++;
                 }
 
-                frequencyDifferenceList.add(Math.abs(expectedPitch.getFrequency() - detectedPitch.getFrequency()));
+                var detectionStatistic = new DetectionStatistic(expectedPitch, detectedPitch, detection.getDetectedFrequency());
+                detectionStatisticList.add(detectionStatistic);
+                frequencyDifferenceList.add(Math.abs(expectedPitch.getFrequency() - detection.getDetectedFrequency()));
                 detections++;
                 duration += windowDuration;
             }
@@ -171,6 +174,7 @@ public class DetectorsBenchmark {
         singleBenchmarkStatistics.setCorrectNoteDetections(correctNoteDetections);
         singleBenchmarkStatistics.setDuration(duration);
         singleBenchmarkStatistics.setAbsoluteFrequencyDifferenceSum(ArrayUtils.calculateAbSum(frequencyDifferenceList));
+        singleBenchmarkStatistics.setDetectionStatisticList(detectionStatisticList);
         return singleBenchmarkStatistics;
     }
 

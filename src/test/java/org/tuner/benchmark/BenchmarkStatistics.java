@@ -1,10 +1,13 @@
 package org.tuner.benchmark;
 
 import org.tuner.detector.frequency.DetectorAlgorithm;
+import org.tuner.detector.model.Pitch;
 import org.tuner.tool.util.ArrayUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 
@@ -37,6 +40,10 @@ class BenchmarkStatistics {
             SingleBenchmarkStatistics results = entry.getValue();
             stringJoiner.add(algorithmName);
             stringJoiner.add(results.formatBenchmarkSummary());
+
+            for (Map.Entry<Pitch, Double> pitchDoubleEntry : results.getAverageNotesDetections().entrySet()) {
+                stringJoiner.add(String.format("%s: %.2f", pitchDoubleEntry.getKey(), pitchDoubleEntry.getValue()));
+            }
         }
         return stringJoiner.toString();
     }
@@ -53,6 +60,12 @@ class BenchmarkStatistics {
 
     private String[][] prepareResultDataAsTable(boolean algorithmsAsColumns) {
         List<String> headers = SingleBenchmarkStatistics.getHeaders();
+        Map<String, Integer> noteIndices = new HashMap<>();
+        for (String note : List.of("E4", "B3", "G3", "D3", "A2", "E2")) {
+            headers.add(note);
+            noteIndices.put(note, headers.size() - 1);
+        }
+
         final int detectorsN = detectorsResults.size();
         final int statisticsN = headers.size();
 
@@ -74,6 +87,11 @@ class BenchmarkStatistics {
             result[detectorIdx][0] = algorithmName;
             for (int i = 0; i < statistics.size(); i++) {
                 result[detectorIdx][i + 1] = statistics.get(i);
+            }
+            for (Map.Entry<Pitch, Double> noteEntry : singleBenchmarkStatistics.getAverageNotesDetections().entrySet()) {
+                int idx = noteIndices.get(noteEntry.getKey().toString()) + 1;
+                assert Objects.equals(result[0][idx], noteEntry.getKey().toString());
+                result[detectorIdx][idx] = String.format("%.2f", noteEntry.getValue());
             }
             detectorIdx++;
         }
